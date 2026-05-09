@@ -1,3 +1,6 @@
 paths:
   raw: data/raw
+
   interim: data/interim/nhanes_merged.parquet
+
+  processed: data/processed/dataset.parquet
