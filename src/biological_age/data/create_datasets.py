@@ -1,20 +1,109 @@
+from pathlib import Path
+
 import pandas as pd
 
 
-def drop_high_missing_columns(df: pd.DataFrame, threshold: float) -> pd.DataFrame:
+CRP_COLUMNS = [
+    "HSCRP",
+    "LBXHSCRP",
+    "CRP",
+    "HSV"
+]
+
+
+def validate_dataset(df: pd.DataFrame) -> None:
     """
-    Drop columns with missing ratio above threshold.
+    Run basic validation checks on dataset integrity.
     """
 
-    valid_cols = []
+    print("\n[INFO] Running dataset validation...")
 
-    for col in df.columns:
-        missing_ratio = df[col].isna().mean()
+    # Dataset shape
+    print(f"[INFO] Dataset shape: {df.shape}")
 
-        if missing_ratio < threshold:
-            valid_cols.append(col)
+    # Duplicate rows
+    duplicate_rows = df.duplicated().sum()
+    print(f"[INFO] Duplicate rows: {duplicate_rows}")
 
-    return df[valid_cols]
+    # Duplicate participant IDs
+    if "SEQN" in df.columns:
+        duplicate_seqn = df["SEQN"].duplicated().sum()
+        print(f"[INFO] Duplicate SEQN values: {duplicate_seqn}")
+
+    # Missing value summary
+    missing_ratio = (
+        df.isna()
+        .mean()
+        .sort_values(ascending=False)
+    )
+
+    print("\n[INFO] Top 10 columns by missing ratio:")
+    print(missing_ratio.head(10))
+
+    # Data type summary
+    print("\n[INFO] Data type summary:")
+    print(df.dtypes.value_counts())
+
+
+def remove_crp_columns(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Remove CRP-related columns permanently.
+    """
+
+    existing_crp_cols = [
+        col for col in CRP_COLUMNS
+        if col in df.columns
+    ]
+
+    if existing_crp_cols:
+        df = df.drop(
+            columns=existing_crp_cols,
+            errors="ignore",
+        )
+
+        print(
+            f"\n[INFO] Dropped CRP columns: "
+            f"{existing_crp_cols}"
+        )
+
+    return df
+
+
+def remove_duplicates(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Remove duplicate rows and duplicate participants.
+    """
+
+    # Remove exact duplicate rows
+    before_rows = len(df)
+
+    df = df.drop_duplicates()
+
+    after_rows = len(df)
+
+    print(
+        f"\n[INFO] Removed "
+        f"{before_rows - after_rows} duplicate rows"
+    )
+
+    # Remove duplicate participant IDs
+    if "SEQN" in df.columns:
+
+        before_seqn = len(df)
+
+        df = df.drop_duplicates(
+            subset="SEQN",
+        )
+
+        after_seqn = len(df)
+
+        print(
+            f"[INFO] Removed "
+            f"{before_seqn - after_seqn} "
+            f"duplicate SEQN entries"
+        )
+
+    return df
 
 
 def create_dataset(df: pd.DataFrame) -> pd.DataFrame:
@@ -22,16 +111,33 @@ def create_dataset(df: pd.DataFrame) -> pd.DataFrame:
     Main dataset creation pipeline.
     """
 
-    print(f"Original shape: {df.shape}")
+    print("\n[INFO] Creating processed dataset...")
+    print(f"[INFO] Original shape: {df.shape}")
 
-    # Step 1: Remove very high-missing columns (>60%)
-    df_clean = drop_high_missing_columns(df, threshold=0.6)
+    # Remove CRP-related columns
+    df = remove_crp_columns(df)
 
-    print(f"After dropping >60% missing: {df_clean.shape}")
+    # Remove duplicates
+    df = remove_duplicates(df)
 
-    # Step 2: Remove moderately bad columns (>40%)
-    df_clean = drop_high_missing_columns(df_clean, threshold=0.4)
+    # Reset index
+    df = df.reset_index(drop=True)
 
-    print(f"After dropping >40% missing: {df_clean.shape}")
+    print(f"\n[INFO] Final shape: {df.shape}")
 
-    return df_clean
+    # Validate dataset
+    validate_dataset(df)
+
+    return df
+
+
+def save_dataset(df: pd.DataFrame, save_path: Path) -> None:
+    """
+    Save processed dataset as parquet.
+    """
+
+    save_path.parent.mkdir(parents=True, exist_ok=True)
+
+    df.to_parquet(save_path, index=False)
+
+    print(f"\n[INFO] Dataset saved to:\n{save_path}")
