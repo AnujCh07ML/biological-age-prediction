@@ -4,3 +4,6 @@ paths:
   interim: data/interim/nhanes_merged.parquet
 
   processed: data/processed/dataset.parquet
+
+data:
+  invalid_numeric_threshold: 1e-10

@@ -6,7 +6,7 @@ from biological_age.data.load_data import load_all_data
 from biological_age.data.merge_data import merge_all_years, combine_years
 
 
-def build_interim_dataset(raw_dir: Path) -> pd.DataFrame:
+def build_interim_dataset(raw_dir: Path, threshold: float,) -> pd.DataFrame:
     """
     Build full NHANES dataset from raw data.
 
@@ -28,7 +28,7 @@ def build_interim_dataset(raw_dir: Path) -> pd.DataFrame:
         raise FileNotFoundError(f"Raw directory not found: {raw_dir}")
 
     print("[INFO] Loading raw data...")
-    data = load_all_data(raw_dir)
+    data = load_all_data(raw_dir, threshold=threshold,)
 
     if not data:
         raise ValueError("No data loaded from raw directory.")
@@ -80,12 +80,14 @@ def run_make_interim(config: Dict[str, Any]) -> None:
     try:
         raw_dir = Path(config["paths"]["raw"])
         output_path = Path(config["paths"]["interim"])
+        threshold = float(config["data"]["invalid_numeric_threshold"])
+
     except KeyError as e:
         raise KeyError(f"Missing config key: {e}")
 
     print("[INFO] Starting interim pipeline...")
 
-    df = build_interim_dataset(raw_dir)
+    df = build_interim_dataset(raw_dir, threshold=threshold,)
 
     save_interim(df, output_path)
 
