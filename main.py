@@ -22,6 +22,11 @@ from biological_age.features.feature_selection import (
 )
 
 
+from biological_age.preprocessing.missingness import (
+    calculate_missingness,
+)
+
+
 def load_config(
     config_path: str = "config.yaml",
 ) -> dict:
@@ -102,7 +107,43 @@ def main():
     # -----------------------------------
     # Step 4.a: Create feature selection subset
     # -----------------------------------
+
+    print(
+        "\n[INFO] Selecting curated features..."
+    )
+
     df = select_features(df)
+
+    print(
+        f"[INFO] Selected feature count: "
+        f"{df.shape[1]}"
+    )
+
+    # -----------------------------------
+    # Step 4.b: Missingness analysis
+    # -----------------------------------
+
+    print(
+        "\n[INFO] Calculating missingness..."
+    )
+
+    missingness = calculate_missingness(df)
+
+    report_path = Path(
+        "outputs/reports/missingness_report.csv"
+    )
+
+    report_path.parent.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    missingness.to_csv(report_path)
+
+    print(
+        f"[INFO] Missingness report saved:\n"
+        f"{report_path}"
+    )
 
     # -----------------------------------
     # Step 5: Create processed dataset
