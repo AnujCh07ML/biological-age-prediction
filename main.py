@@ -12,6 +12,11 @@ from biological_age.data.create_datasets import (
     save_dataset,
 )
 
+from biological_age.features.column_mapping import (
+    validate_columns,
+    rename_columns,
+)
+
 
 def load_config(
     config_path: str = "config.yaml",
@@ -31,6 +36,10 @@ def main():
     Main pipeline entrypoint.
     """
 
+    # -----------------------------------
+    # Step 0: Load configuration
+    # -----------------------------------
+
     print("\n[INFO] Loading configuration...")
 
     config = load_config()
@@ -38,6 +47,7 @@ def main():
     # -----------------------------------
     # Step 1: Build interim dataset
     # -----------------------------------
+
     print("\n[INFO] Running interim pipeline...")
 
     run_make_interim(config)
@@ -45,6 +55,7 @@ def main():
     # -----------------------------------
     # Step 2: Load interim dataset
     # -----------------------------------
+
     interim_path = Path(
         config["paths"]["interim"]
     )
@@ -57,16 +68,64 @@ def main():
     df = pd.read_parquet(interim_path)
 
     # -----------------------------------
-    # Step 3: Create processed dataset
+    # Step 3: Validate raw columns
     # -----------------------------------
+
+    print(
+        "\n[INFO] Validating raw NHANES columns..."
+    )
+
+    validate_columns(df)
+
+    print(
+        "[INFO] Column validation passed."
+    )
+
+    # -----------------------------------
+    # Step 4: Rename columns
+    # -----------------------------------
+
+    print(
+        "\n[INFO] Renaming columns..."
+    )
+
+    df = rename_columns(df)
+
+    print(
+        "[INFO] Column renaming completed."
+    )
+
+    # -----------------------------------
+    # Step 5: Create processed dataset
+    # -----------------------------------
+
+    print(
+        "\n[INFO] Creating processed dataset..."
+    )
+
     processed_df = create_dataset(df)
 
     # -----------------------------------
-    # Step 4: Save processed dataset
+    # Step 6: Save processed dataset
     # -----------------------------------
-    processed_path = Path(config["paths"]["processed"])
 
-    save_dataset(processed_df, processed_path,)
+    processed_path = Path(
+        config["paths"]["processed"]
+    )
+
+    print(
+        f"\n[INFO] Saving processed dataset:\n"
+        f"{processed_path}"
+    )
+
+    save_dataset(
+        processed_df,
+        processed_path,
+    )
+
+    # -----------------------------------
+    # Pipeline completed
+    # -----------------------------------
 
     print(
         "\n[INFO] Full data pipeline completed."
