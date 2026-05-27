@@ -17,6 +17,10 @@ from biological_age.features.column_mapping import (
     rename_columns,
 )
 
+from biological_age.features.feature_selection import (
+    select_features,
+)
+
 
 def load_config(
     config_path: str = "config.yaml",
@@ -94,6 +98,11 @@ def main():
     print(
         "[INFO] Column renaming completed."
     )
+
+    # -----------------------------------
+    # Step 4.a: Create feature selection subset
+    # -----------------------------------
+    df = select_features(df)
 
     # -----------------------------------
     # Step 5: Create processed dataset
