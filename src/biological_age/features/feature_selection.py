@@ -1,30 +1,40 @@
+# =====================================
+# Demographic Features
+# =====================================
+
 DEMOGRAPHIC_FEATURES = [
     "sex",
     "age_years",
-    "race_ethnicity",
-    "education_level",
-    "poverty_income_ratio",
 ]
 
+
+# =====================================
+# Metabolic Features
+# =====================================
 
 METABOLIC_FEATURES = [
     "albumin",
     "blood_urea_nitrogen",
     "creatinine",
     "uric_acid",
-    "fasting_glucose",
     "hba1c_percent",
-    "fasting_insulin",
 ]
 
+
+# =====================================
+# Lipid Features
+# =====================================
 
 LIPID_FEATURES = [
     "total_cholesterol",
     "hdl_cholesterol",
-    "ldl_cholesterol_si",
     "triglycerides",
 ]
 
+
+# =====================================
+# CBC / Hematology Features
+# =====================================
 
 CBC_FEATURES = [
     "white_blood_cell_count",
@@ -40,6 +50,10 @@ CBC_FEATURES = [
 ]
 
 
+# =====================================
+# Electrolyte Features
+# =====================================
+
 ELECTROLYTE_FEATURES = [
     "calcium",
     "sodium_si",
@@ -47,6 +61,10 @@ ELECTROLYTE_FEATURES = [
     "phosphorus",
 ]
 
+
+# =====================================
+# Liver Features
+# =====================================
 
 LIVER_FEATURES = [
     "total_bilirubin",
@@ -56,10 +74,9 @@ LIVER_FEATURES = [
 ]
 
 
-FASTING_FEATURES = [
-    "fasting_hours",
-]
-
+# =====================================
+# Final Feature List
+# =====================================
 
 KEEP_COLUMNS = (
     DEMOGRAPHIC_FEATURES
@@ -68,7 +85,6 @@ KEEP_COLUMNS = (
     + CBC_FEATURES
     + ELECTROLYTE_FEATURES
     + LIVER_FEATURES
-    + FASTING_FEATURES
 )
 
 
