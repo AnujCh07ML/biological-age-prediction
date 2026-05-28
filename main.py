@@ -138,7 +138,20 @@ def main():
         exist_ok=True,
     )
 
-    missingness.to_csv(report_path)
+    missingness_df = (
+        missingness
+        .reset_index()
+    )
+
+    missingness_df.columns = [
+        "feature",
+        "missing_ratio",
+    ]
+
+    missingness_df.to_csv(
+        report_path,
+        index=False,
+    )
 
     print(
         f"[INFO] Missingness report saved:\n"
