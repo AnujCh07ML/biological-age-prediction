@@ -29,7 +29,7 @@ def create_train_test_split(
     tuple
         X_train, X_test, y_train, y_test
     """
-
+    # Create train/test split for features & target(age).
     X_train, X_test, y_train, y_test = train_test_split(
         X,
         y,
