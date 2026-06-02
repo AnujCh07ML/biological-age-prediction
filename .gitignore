@@ -37,7 +37,7 @@ data/processed/
 # =========================
 # Models
 # =========================
-models/
+/models/
 *.pkl
 *.joblib
 *.h5
