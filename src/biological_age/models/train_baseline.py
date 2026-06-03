@@ -78,7 +78,5 @@ def train_baseline_model(
     return (
         model,
         preprocessor,
-        X_train_processed,
-        X_test_processed,
         y_pred,
     )

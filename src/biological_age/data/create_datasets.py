@@ -114,18 +114,55 @@ def create_dataset(df: pd.DataFrame) -> pd.DataFrame:
     print("\n[INFO] Creating processed dataset...")
     print(f"[INFO] Original shape: {df.shape}")
 
+    # -----------------------------------
+    # Remove rows with missing target
+    # -----------------------------------
+
+    missing_target = (
+        df["age_years"]
+        .isna()
+        .sum()
+    )
+
+    if missing_target > 0:
+        print(
+            f"\n[INFO] Removing "
+            f"{missing_target} rows with "
+            f"missing age_years"
+        )
+
+        df = df.dropna(
+            subset=["age_years"]
+        )
+
+    # -----------------------------------
     # Remove CRP-related columns
+    # -----------------------------------
+
     df = remove_crp_columns(df)
 
-    # Remove duplicates
+    # -----------------------------------
+    # Remove duplicate rows
+    # -----------------------------------
+
     df = remove_duplicates(df)
 
+    # -----------------------------------
     # Reset index
-    df = df.reset_index(drop=True)
+    # -----------------------------------
 
-    print(f"\n[INFO] Final shape: {df.shape}")
+    df = df.reset_index(
+        drop=True
+    )
 
+    print(
+        f"\n[INFO] Final shape: {df.shape}"
+    )
+
+    # -----------------------------------
     # Validate dataset
+    # -----------------------------------
+
     validate_dataset(df)
 
     return df

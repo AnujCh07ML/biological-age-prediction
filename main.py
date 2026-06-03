@@ -3,6 +3,8 @@ from pathlib import Path
 import pandas as pd
 import yaml
 
+import json
+
 from biological_age.data.make_interim import (
     run_make_interim,
 )
@@ -21,9 +23,25 @@ from biological_age.features.feature_selection import (
     select_features,
 )
 
-
 from biological_age.preprocessing.missingness import (
     calculate_missingness,
+)
+
+from biological_age.preprocessing.preprocess import (
+    build_preprocessor,
+    split_features_target,
+)
+
+from biological_age.split.train_test_split import (
+    create_train_test_split,
+)
+
+from biological_age.models.train_baseline import (
+    train_baseline_model,
+)
+
+from biological_age.evaluation.evaluate import (
+    evaluate_model,
 )
 
 
@@ -105,7 +123,7 @@ def main():
     )
 
     # -----------------------------------
-    # Step 4.a: Create feature selection subset
+    # Step 5: Feature selection
     # -----------------------------------
 
     print(
@@ -120,7 +138,7 @@ def main():
     )
 
     # -----------------------------------
-    # Step 4.b: Missingness analysis
+    # Step 6: Missingness analysis
     # -----------------------------------
 
     print(
@@ -159,7 +177,7 @@ def main():
     )
 
     # -----------------------------------
-    # Step 5: Create processed dataset
+    # Step 7: Create processed dataset
     # -----------------------------------
 
     print(
@@ -169,7 +187,7 @@ def main():
     processed_df = create_dataset(df)
 
     # -----------------------------------
-    # Step 6: Save processed dataset
+    # Step 8: Save processed dataset
     # -----------------------------------
 
     processed_path = Path(
@@ -187,11 +205,149 @@ def main():
     )
 
     # -----------------------------------
+    # Step 9: Split features and target
+    # -----------------------------------
+
+    print(
+        "\n[INFO] Splitting features and target..."
+    )
+
+    X, y = split_features_target(
+        processed_df
+    )
+
+    print(
+        f"[INFO] Features shape: {X.shape}"
+    )
+
+    print(
+        f"[INFO] Target shape: {y.shape}"
+    )
+
+    # -----------------------------------
+    # Step 10: Train/Test Split
+    # -----------------------------------
+
+    print(
+        "\n[INFO] Creating train/test split..."
+    )
+
+    (
+        X_train,
+        X_test,
+        y_train,
+        y_test,
+    ) = create_train_test_split(
+        X,
+        y,
+    )
+
+    print(
+        f"[INFO] X_train shape: {X_train.shape}"
+    )
+
+    print(
+        f"[INFO] X_test shape: {X_test.shape}"
+    )
+
+    # -----------------------------------
+    # Step 11: Build preprocessor
+    # -----------------------------------
+
+    print(
+        "\n[INFO] Building preprocessing pipeline..."
+    )
+
+    preprocessor = (
+        build_preprocessor()
+    )
+
+    # -----------------------------------
+    # Step 12: Train baseline model
+    # -----------------------------------
+
+    print(
+        "\n[INFO] Training baseline Random Forest..."
+    )
+
+    (
+        model,
+        preprocessor,
+        y_pred,
+    ) = train_baseline_model(
+        preprocessor=preprocessor,
+        X_train=X_train,
+        X_test=X_test,
+        y_train=y_train,
+    )
+
+    # -----------------------------------
+    # Step 13: Evaluate model
+    # -----------------------------------
+
+    print(
+        "\n[INFO] Evaluating model..."
+    )
+
+    metrics = evaluate_model(
+        y_test,
+        y_pred,
+    )
+
+    # -----------------------------------
+    # Step 14: Print results
+    # -----------------------------------
+
+    print(
+        "\n[INFO] Model Performance"
+    )
+
+    print(
+        f"MAE : {metrics['mae']:.2f}"
+    )
+
+    print(
+        f"RMSE: {metrics['rmse']:.2f}"
+    )
+
+    print(
+        f"R²  : {metrics['r2']:.4f}"
+    )
+
+    # -----------------------------------
     # Pipeline completed
     # -----------------------------------
 
     print(
         "\n[INFO] Full data pipeline completed."
+    )
+
+    # -----------------------------------
+    # Save metrics
+    # -----------------------------------
+
+    metrics_path = Path(
+        "outputs/metrics/baseline_metrics.json"
+    )
+
+    metrics_path.parent.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    with open(
+        metrics_path,
+        "w",
+    ) as file:
+        json.dump(
+            metrics,
+            file,
+            indent=4,
+        )
+
+    print(
+        f"\n[INFO] Metrics saved:\n"
+        f"{metrics_path}"
     )
 
 
