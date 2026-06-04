@@ -6,6 +6,9 @@ import yaml
 import json
 
 from sklearn.ensemble import RandomForestRegressor
+from xgboost import XGBRegressor
+from lightgbm import LGBMRegressor
+
 
 from biological_age.data.make_interim import (
     run_make_interim,
@@ -265,7 +268,7 @@ def main():
     )
 
     # -----------------------------------
-    # Step 12: Train model
+    # Step 12.A: Train Random Forest model
     # -----------------------------------
 
     print(
@@ -278,12 +281,37 @@ def main():
         n_jobs=-1,
     )
 
+    # -----------------------------------
+    # Step 12.B: Train XGBoost model
+    # -----------------------------------
+
+    xgb = XGBRegressor(
+        n_estimators=500,
+        learning_rate=0.05,
+        max_depth=6,
+        random_state=42,
+        n_jobs=-1,
+
+    )
+
+    # -----------------------------------
+    # Step 12.C: Train XGBoost model
+    # -----------------------------------
+
+    lgbm = LGBMRegressor(
+        n_estimators=500,
+        learning_rate=0.05,
+        max_depth=6,
+        random_state=42,
+        n_jobs=-1,
+    )
+
     (
-        estimator,
+        model,
         preprocessor,
         y_pred,
     ) = train_model(
-        estimator=rf,
+        estimator=lgbm,
         preprocessor=preprocessor,
         X_train=X_train,
         X_test=X_test,
