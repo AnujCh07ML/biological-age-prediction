@@ -1,12 +1,12 @@
 from sklearn.ensemble import RandomForestRegressor
 
 
-def train_baseline_model(
+def train_model(
+    estimator,
     preprocessor,
     X_train,
     X_test,
     y_train,
-    random_state: int = 42,
 ):
     """
     Train baseline Random Forest model.
@@ -44,25 +44,42 @@ def train_baseline_model(
     # Fit preprocessor on train only
     # -----------------------------
 
+    print("\n=== RAW FEATURES ===")
+    print(f"Number of raw features: {len(X_train.columns)}")
+
+    for col in X_train.columns:
+        print(col)
+
     X_train_processed = (
         preprocessor.fit_transform(X_train)
     )
+
+    print("\n=== PROCESSED SHAPE ===")
+    print(X_train_processed.shape)
 
     X_test_processed = (
         preprocessor.transform(X_test)
     )
 
-    # -----------------------------
-    # Train Random Forest
-    # -----------------------------
-
-    model = RandomForestRegressor(
-        n_estimators=100,
-        random_state=random_state,
-        n_jobs=-1,
+    feature_names = (
+        preprocessor.get_feature_names_out()
     )
 
-    model.fit(
+    print("\n=== FIRST 20 FEATURES ===")
+
+    for name in feature_names[:20]:
+        print(name)
+
+    print(
+        f"\nTotal processed features: "
+        f"{len(feature_names)}"
+    )
+
+    # -----------------------------
+    # Train Model
+    # -----------------------------
+
+    estimator.fit(
         X_train_processed,
         y_train,
     )
@@ -71,12 +88,12 @@ def train_baseline_model(
     # Predict on test set
     # -----------------------------
 
-    y_pred = model.predict(
+    y_pred = estimator.predict(
         X_test_processed
     )
 
     return (
-        model,
+        estimator,
         preprocessor,
         y_pred,
     )

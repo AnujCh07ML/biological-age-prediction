@@ -5,6 +5,8 @@ import yaml
 
 import json
 
+from sklearn.ensemble import RandomForestRegressor
+
 from biological_age.data.make_interim import (
     run_make_interim,
 )
@@ -37,7 +39,7 @@ from biological_age.split.train_test_split import (
 )
 
 from biological_age.models.train_baseline import (
-    train_baseline_model,
+    train_model,
 )
 
 from biological_age.evaluation.evaluate import (
@@ -263,18 +265,25 @@ def main():
     )
 
     # -----------------------------------
-    # Step 12: Train baseline model
+    # Step 12: Train model
     # -----------------------------------
 
     print(
-        "\n[INFO] Training baseline Random Forest..."
+        "\n[INFO] Training Random Forest..."
+    )
+
+    rf = RandomForestRegressor(
+        n_estimators=100,
+        random_state=42,
+        n_jobs=-1,
     )
 
     (
-        model,
+        estimator,
         preprocessor,
         y_pred,
-    ) = train_baseline_model(
+    ) = train_model(
+        estimator=rf,
         preprocessor=preprocessor,
         X_train=X_train,
         X_test=X_test,
@@ -323,7 +332,7 @@ def main():
     )
 
     # -----------------------------------
-    # Save metrics
+    # Step 15: Save metrics
     # -----------------------------------
 
     metrics_path = Path(
