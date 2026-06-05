@@ -4,6 +4,7 @@ import pandas as pd
 import yaml
 
 import json
+import joblib
 
 from sklearn.ensemble import RandomForestRegressor
 from xgboost import XGBRegressor
@@ -268,103 +269,119 @@ def main():
     )
 
     # -----------------------------------
-    # Step 12.A: Train Random Forest model
+    # Step 12: Define models
     # -----------------------------------
 
-    print(
-        "\n[INFO] Training Random Forest..."
-    )
-
-    rf = RandomForestRegressor(
-        n_estimators=100,
-        random_state=42,
-        n_jobs=-1,
-    )
-
-    # -----------------------------------
-    # Step 12.B: Train XGBoost model
-    # -----------------------------------
-
-    xgb = XGBRegressor(
-        n_estimators=500,
-        learning_rate=0.05,
-        max_depth=6,
-        random_state=42,
-        n_jobs=-1,
-
-    )
-
-    # -----------------------------------
-    # Step 12.C: Train XGBoost model
-    # -----------------------------------
-
-    lgbm = LGBMRegressor(
-        n_estimators=500,
-        learning_rate=0.05,
-        max_depth=6,
-        random_state=42,
-        n_jobs=-1,
-    )
-
-    (
-        model,
-        preprocessor,
-        y_pred,
-    ) = train_model(
-        estimator=lgbm,
-        preprocessor=preprocessor,
-        X_train=X_train,
-        X_test=X_test,
-        y_train=y_train,
-    )
+    models = {
+        "rf": RandomForestRegressor(
+            n_estimators=100,
+            random_state=42,
+            n_jobs=-1,
+        ),
+        "xgb": XGBRegressor(
+            n_estimators=500,
+            learning_rate=0.05,
+            max_depth=6,
+            random_state=42,
+            n_jobs=-1,
+        ),
+        "lgbm": LGBMRegressor(
+            n_estimators=500,
+            learning_rate=0.05,
+            max_depth=6,
+            random_state=42,
+            n_jobs=-1,
+        ),
+    }
 
     # -----------------------------------
-    # Step 13: Evaluate model
+    # Step 13: Train and evaluate models
     # -----------------------------------
 
-    print(
-        "\n[INFO] Evaluating model..."
-    )
+    comparison_results = {}
 
-    metrics = evaluate_model(
-        y_test,
-        y_pred,
-    )
+    for model_name, estimator in models.items():
+
+        print(
+            f"\n[INFO] Training {model_name.upper()}..."
+        )
+
+        # fresh preprocessor
+        preprocessor = build_preprocessor()
+
+        (
+            model,
+            preprocessor,
+            y_pred,
+        ) = train_model(
+            estimator=estimator,
+            preprocessor=preprocessor,
+            X_train=X_train,
+            X_test=X_test,
+            y_train=y_train,
+        )
+
+        # -----------------------------------
+        # Save model
+        # -----------------------------------
+
+        model_path = Path(
+            f"models/{model_name}_model.pkl"
+        )
+
+        model_path.parent.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+
+        joblib.dump(
+            model,
+            model_path,
+        )
+
+        print(
+            f"[INFO] Model saved: {model_path}"
+        )
+
+        # -----------------------------------
+        # Evaluate model
+        # -----------------------------------
+
+        metrics = evaluate_model(
+            y_test,
+            y_pred,
+        )
+
+        comparison_results[
+            model_name
+        ] = metrics
+
+        # -----------------------------------
+        # Print metrics
+        # -----------------------------------
+
+        print(
+            f"\n{model_name.upper()} Results"
+        )
+
+        print(
+            f"MAE : {metrics['mae']:.2f}"
+        )
+
+        print(
+            f"RMSE: {metrics['rmse']:.2f}"
+        )
+
+        print(
+            f"R²  : {metrics['r2']:.4f}"
+        )
 
     # -----------------------------------
-    # Step 14: Print results
-    # -----------------------------------
-
-    print(
-        "\n[INFO] Model Performance"
-    )
-
-    print(
-        f"MAE : {metrics['mae']:.2f}"
-    )
-
-    print(
-        f"RMSE: {metrics['rmse']:.2f}"
-    )
-
-    print(
-        f"R²  : {metrics['r2']:.4f}"
-    )
-
-    # -----------------------------------
-    # Pipeline completed
-    # -----------------------------------
-
-    print(
-        "\n[INFO] Full data pipeline completed."
-    )
-
-    # -----------------------------------
-    # Step 15: Save metrics
+    # Step 14: Save comparison metrics
     # -----------------------------------
 
     metrics_path = Path(
-        "outputs/metrics/baseline_metrics.json"
+        "outputs/metrics/model_comparison.json"
     )
 
     metrics_path.parent.mkdir(
@@ -377,7 +394,7 @@ def main():
         "w",
     ) as file:
         json.dump(
-            metrics,
+            comparison_results,
             file,
             indent=4,
         )
@@ -385,6 +402,14 @@ def main():
     print(
         f"\n[INFO] Metrics saved:\n"
         f"{metrics_path}"
+    )
+
+    # -----------------------------------
+    # Pipeline completed
+    # -----------------------------------
+
+    print(
+        "\n[INFO] Full data pipeline completed."
     )
 
 
