@@ -9,7 +9,7 @@ import joblib
 from sklearn.ensemble import RandomForestRegressor
 from xgboost import XGBRegressor
 from lightgbm import LGBMRegressor
-
+from sklearn.pipeline import Pipeline
 
 from biological_age.data.make_interim import (
     run_make_interim,
