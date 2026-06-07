@@ -279,18 +279,24 @@ def main():
             n_jobs=-1,
         ),
         "xgb": XGBRegressor(
-            n_estimators=500,
-            learning_rate=0.05,
-            max_depth=6,
+            n_estimators=800,
+            learning_rate=0.03,
+            max_depth=8,
+            subsample=0.7,
+            colsample_bytree=1.0,
             random_state=42,
             n_jobs=-1,
         ),
         "lgbm": LGBMRegressor(
             n_estimators=500,
             learning_rate=0.05,
-            max_depth=6,
+            max_depth=10,
+            num_leaves=127,
+            subsample=0.7,
+            colsample_bytree=0.7,
             random_state=42,
             n_jobs=-1,
+            verbose=-1,
         ),
     }
 
